@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -38,7 +39,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements SensorEventListener {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     public static String API_URL = "https://clsw-fe777-default-rtdb.europe-west1.firebasedatabase.app/";
     private static final int REQUEST_AUTHORIZATIONS_RESULT_CODE = 101;
@@ -97,6 +98,10 @@ public class MainActivity extends Activity {
             Log.e(LOG_TAG, "This hardware doesn't have GPS.");
             noGpsExitConfirmation();
         }
+
+        mSensorManager = ((SensorManager)getSystemService(SENSOR_SERVICE));
+        mHeartRateSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
+        mSensorManager.registerListener(this, mHeartRateSensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     public void sendDataSnap(DataSnap ds) {
@@ -170,6 +175,10 @@ public class MainActivity extends Activity {
             Log.d(LOG_TAG, "Unknown sensor type");
     }
 
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {}
+
     private final LocationCallback locationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(@NonNull LocationResult locationResult) {
@@ -188,7 +197,7 @@ public class MainActivity extends Activity {
                 }
 
                 // Build new data snap
-                DataSnap currentDS = new DataSnap(new Date().toString(), currHeartRate, last.getLatitude(), last.getLongitude(), last.getAltitude(), last.getSpeed());
+                DataSnap currentDS = new DataSnap(new Date().getTime(), currHeartRate, last.getLatitude(), last.getLongitude(), last.getAltitude(), last.getSpeed());
                 sendDataSnap(currentDS);
             }
         }
