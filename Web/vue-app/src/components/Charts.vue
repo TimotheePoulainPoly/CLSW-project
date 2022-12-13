@@ -2,7 +2,7 @@
   <!--{{ datapoints }}-->
   <HeartrateSpeedChart/><!-- v-bind:xAxisDefaultLabels="datapoints === undefined ?  null : defaultXaxisLabels"/>-->
   <br/><br/><br/><br/><br/>
-  <!--<AltitudeChart/>v-bind:xAxisDefaultLabels="getDefaultXaxisLabels"/>-->
+  <AltitudeChart/> <!--v-bind:xAxisDefaultLabels="getDefaultXaxisLabels"/>-->
 </template>
 
 

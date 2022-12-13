@@ -55,7 +55,7 @@ export default {
       return {
         chart: {
           height: 350,
-          type: 'area'
+          type: 'scatter'
         },
         dataLabels: {
           enabled: false
@@ -91,7 +91,7 @@ export default {
         console.log("y : ", this.$store.getters.getDatapoints[i].heartrate);
         dataArray[i] =
             {
-              x: new Date(this.$store.getters.getDatapoints[i].timestamp).toString(),
+              x: new Date(this.$store.getters.getDatapoints[i].timestamp).toISOString(),
               y: this.$store.getters.getDatapoints[i].heartrate,
             };
       }
