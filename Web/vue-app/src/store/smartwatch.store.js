@@ -12,8 +12,7 @@ export default createStore({
                     latitude: 0,
                     longitude: 0,
                     speed: 10,
-                    time: 0,
-                    count: 0
+                    timestamp: 0,
                 }
                  */
             ]
