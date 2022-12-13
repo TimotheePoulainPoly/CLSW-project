@@ -20,7 +20,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.FragmentActivity;
 import androidx.wear.activity.ConfirmationActivity;
+import androidx.wear.ambient.AmbientModeSupport;
 
 import com.example.wearos_app.databinding.ActivityMainBinding;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -29,6 +31,7 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -39,7 +42,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends Activity implements SensorEventListener {
+public class MainActivity extends FragmentActivity implements AmbientModeSupport.AmbientCallbackProvider, SensorEventListener {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     public static String API_URL = "https://clsw-fe777-default-rtdb.europe-west1.firebasedatabase.app/";
     private static final int REQUEST_AUTHORIZATIONS_RESULT_CODE = 101;
@@ -51,12 +54,15 @@ public class MainActivity extends Activity implements SensorEventListener {
 
     ArrayList<Location> locations = new ArrayList<>();
     ArrayList<Float> heartRates = new ArrayList<>();
+    Location lastLocation = null;
     private static final int MAX_LOCATION_RECORDED = 50;
 
     // Sensors
     SensorManager mSensorManager;
     Sensor mHeartRateSensor;
     float currHeartRate = 0;
+    double distance = 0.0;
+    DecimalFormat df;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +70,15 @@ public class MainActivity extends Activity implements SensorEventListener {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+        AmbientModeSupport.AmbientController ambientController = AmbientModeSupport.attach(this);
+        ambientController.setAutoResumeEnabled(true);
 
-        mTextView = binding.text;
+        mTextView = binding.Header;
+
+        binding.pos.setText("0.00 km");
+
+        df = new DecimalFormat();
+        df.setMaximumFractionDigits(2);
 
         /**
          * DataSnap initial = new DataSnap(new Date().toString(), 100f);
@@ -119,7 +132,6 @@ public class MainActivity extends Activity implements SensorEventListener {
                 Log.d(LOG_TAG, "Data sent successfully");
                 Log.d(LOG_TAG, String.valueOf(call.request()));
                 Log.d(LOG_TAG, response.toString());
-                Toast.makeText(getApplicationContext(), String.format("OK"), Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -129,6 +141,26 @@ public class MainActivity extends Activity implements SensorEventListener {
             }
         });
     }
+
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_HEART_RATE) {
+            currHeartRate = event.values[0];
+            Log.d(LOG_TAG, "Heart Rate changed : "+currHeartRate);
+            binding.bpm.setText(String.valueOf((int) currHeartRate));
+        }
+        else
+            Log.d(LOG_TAG, "Unknown sensor type");
+    }
+
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {}
+
+    /** ********************************************************************************************
+        * Code below this point : METHODS MAINLY REUSED FROM THE GPS CLSW MEMO APP TD
+        * AND MODIFIED TO SUIT THIS PROJECT
+        * Author : Laurent Pastorelli
+        *******************************************************************************************/
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -166,25 +198,16 @@ public class MainActivity extends Activity implements SensorEventListener {
         );
     }
 
-    public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_HEART_RATE) {
-            currHeartRate = event.values[0];
-            Log.d(LOG_TAG, "Heart Rate changed : "+currHeartRate);
-        }
-        else
-            Log.d(LOG_TAG, "Unknown sensor type");
+    public void stopLocationUpdates() {
+        Log.d(LOG_TAG, "stopLocationUpdates()");
+        fusedLocationClient.removeLocationUpdates(locationCallback);
     }
-
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {}
 
     private final LocationCallback locationCallback = new LocationCallback() {
         @Override
         public void onLocationResult(@NonNull LocationResult locationResult) {
             Log.d(LOG_TAG, "onLocationResult(" + locationResult.getLocations().size() + ")");
             if (locationResult.getLocations().size() > 0) {
-                Location last = null;
                 for (Location location : locationResult.getLocations()) {
                     int length = locations.size();
                     if (length >= MAX_LOCATION_RECORDED) {
@@ -192,12 +215,16 @@ public class MainActivity extends Activity implements SensorEventListener {
                         heartRates.remove(length - 1);
                     }
                     locations.add(0, location); // insert new element
-                    last = location;
+                    if (lastLocation != null) {
+                        distance += lastLocation.distanceTo(location)/1000;
+                    }
+                    lastLocation = location;
+                    binding.pos.setText(df.format(distance)+" km");
                     heartRates.add(0, currHeartRate);
                 }
 
                 // Build new data snap
-                DataSnap currentDS = new DataSnap(new Date().getTime(), currHeartRate, last.getLatitude(), last.getLongitude(), last.getAltitude(), last.getSpeed());
+                DataSnap currentDS = new DataSnap(new Date().getTime(), currHeartRate, lastLocation.getLatitude(), lastLocation.getLongitude(), lastLocation.getAltitude(), lastLocation.getSpeed());
                 sendDataSnap(currentDS);
             }
         }
@@ -214,5 +241,34 @@ public class MainActivity extends Activity implements SensorEventListener {
         intent.putExtra(ConfirmationActivity.EXTRA_MESSAGE, "No GPS found");
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    public AmbientModeSupport.AmbientCallback getAmbientCallback() {
+        return new CustomAmbientCallback(this);
+    }
+
+    public static class CustomAmbientCallback extends AmbientModeSupport.AmbientCallback {
+        private static final String LOG_TAG= CustomAmbientCallback.class.getSimpleName();
+        MainActivity activity;
+
+        CustomAmbientCallback(MainActivity activity) {
+            this.activity = activity;
+        }
+
+        @Override
+        public void onEnterAmbient(Bundle ambientDetails) {
+            super.onEnterAmbient(ambientDetails);
+            Log.d(LOG_TAG, "onEnterAmbient() " + ambientDetails);
+            // activity.stopLocationUpdates();
+        }
+
+        @Override
+        public void onExitAmbient() {
+            super.onExitAmbient();
+            Log.d(LOG_TAG, "onExitAmbient()");
+            // activity.startLocationUpdates();
+
+        }
     }
 }
