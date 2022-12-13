@@ -1,8 +1,12 @@
 <template>
   <!--{{ datapoints }}-->
-  <HeartrateSpeedChart/><!-- v-bind:xAxisDefaultLabels="datapoints === undefined ?  null : defaultXaxisLabels"/>-->
-  <br/><br/><br/><br/><br/>
+  <div class="card">
+    <HeartrateSpeedChart/><!-- v-bind:xAxisDefaultLabels="datapoints === undefined ?  null : defaultXaxisLabels"/>-->
+  </div>
+  <br/><br/><br/>
+  <div class="card">
   <AltitudeChart/> <!--v-bind:xAxisDefaultLabels="getDefaultXaxisLabels"/>-->
+  </div>
 </template>
 
 
@@ -120,4 +124,12 @@ export default {
 
 <style scoped>
 
+.card {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  background: white;
+  border: solid white;
+  border-radius: 20px;
+  padding: 5% 4% 5% 3%;
+
+}
 </style>
