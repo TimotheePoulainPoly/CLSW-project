@@ -1,8 +1,5 @@
 <template>
-  <div id="second-chart">
-    <!--<span>altitudes : {{ altitudes }}</span>-->
-    <apexchart type="scatter" height="300" :options="chartOptions" :series="altitudeSerie"></apexchart>
-  </div>
+  <apexchart type="scatter" :options="chartOptions" :series="altitudeSerie"></apexchart>
 </template>
 
 <script>
@@ -28,15 +25,10 @@ export default {
     chartOptions: function () {
       return {
         chart: {
-          height: 300,
           type: 'scatter',
-
         },
         dataLabels: {
           enabled: false
-        },
-        stroke: {
-          curve: 'smooth'
         },
         title: {
           text: "ALTITUDE",
@@ -46,46 +38,82 @@ export default {
           offsetY: 0,
           floating: false,
           style: {
-            fontSize:  '17px',
-            fontWeight:  'bold',
-            fontFamily:  undefined,
-            color:  'black'
+            fontSize: '17px',
+            fontWeight: 'bold',
+            fontFamily: 'font-family: Montserrat, Arial, sans-serif',
+            color: 'white'
           },
         },
         xaxis: {
           type: 'datetime',
-
           title: {
             text: 'Temps',
-            offsetY: 70,
-            offsetX: 0
+            offsetY: 67,
+            offsetX: 0,
+            style: {
+              color: 'white',
+              /*fontSize: '12px',*/
+              fontFamily: 'font-family: Montserrat, Arial, sans-serif',
+              fontWeight: 800,
+            },
           },
-
           labels: {
             show: true,
+            datetimeUTC: false,
+            style: {
+              colors: 'white',
+              /*fontSize: '12px',*/
+              fontFamily: 'font-family: Montserrat, Arial, sans-serif',
+              fontWeight: 800,
+            },
           }
         },
-        /*categories: null/*this.getDefaultXaxisLabels(), //["2022-12-10T19:00:00.000Z", "2022-12-10T20:00:00.000Z", "2022-12-10T21:00:00.000Z", "2022-12-10T22:00:00.000Z", "2022-12-10T23:00:00.000Z", "2022-12-11T00:00:00.000Z", "2022-12-11T01:00:00.000Z", "2022-12-11T02:00:00.000Z", "2022-12-11T03:00:00.000Z", "2022-12-11T04:00:00.000Z", "2022-12-11T05:00:00.000Z", "2022-12-11T06:00:00.000Z", "2022-12-11T07:00:00.000Z", "2022-12-11T08:00:00.000Z", "2022-12-11T09:00:00.000Z", "2022-12-11T10:00:00.000Z", "2022-12-11T11:00:00.000Z", "2022-12-11T12:00:00.000Z", "2022-12-11T13:00:00.000Z", "2022-12-11T14:00:00.000Z", "2022-12-11T15:00:00.000Z", "2022-12-11T16:00:00.000Z", "2022-12-11T17:00:00.000Z", "2022-12-11T18:00:00.000Z" ]
-        // "2018-09-19T00:00:00.000Z", "2018-09-19T01:30:00.000Z", "2018-09-19T02:30:00.000Z", "2018-09-19T03:30:00.000Z", "2018-09-19T04:30:00.000Z", "2018-09-19T05:30:00.000Z", "2018-09-19T06:30:00.000Z"]
-      },
-        */
         tooltip: {
+          theme: 'dark',
           x: {
-            format: 'dd/MM/yy HH:mm:ss'
+            format: 'ddd. dd MMM. yyyy. à  HH:mm:ss'
           },
           y: {
             formatter: undefined,
             title: {
-              formatter: (seriesName) => seriesName + " : " ,
+              formatter: (seriesName) => seriesName + " : ",
             },
           }
         },
-
-        legend: {},
-        yaxis: {
-          title: {
-            text: 'Altitude (m)'
+        legend: {
+          show: true,
+          showForSingleSeries: false,
+          offsetX: 0,
+          offsetY: 5,
+          fontFamily: 'font-family: Montserrat, Arial, sans-serif',
+          fontWeight: 800,
+          labels: {
+            colors: 'white',
+            useSeriesColors: false
           },
+        },
+        yaxis: {
+          type: 'numeric',
+          title: {
+            text: 'Altitude (m)',
+            offsetY: 0,
+            offsetX: -5,
+            style: {
+              color: 'white',
+              /*fontSize: '12px',*/
+              fontFamily: 'font-family: Montserrat, Arial, sans-serif',
+              fontWeight: 800,
+            },
+          },
+          labels: {
+            show: true,
+            style: {
+              colors: 'white',
+              /*fontSize: '12px',*/
+              fontFamily: 'font-family: Montserrat, Arial, sans-serif',
+              fontWeight: 800,
+            },
+          }
         },
       }
     },
@@ -100,7 +128,7 @@ export default {
         dataArray[i] =
             {
               x: new Date(this.$store.getters.getDatapoints[i].timestamp).toISOString(),
-              y: this.$store.getters.getDatapoints[i].altitude,
+              y: this.$store.getters.getDatapoints[i].altitude.toFixed(2),
             };
       }
       return dataArray;
@@ -108,7 +136,6 @@ export default {
   },
 }
 </script>
-
 
 <style scoped>
 

@@ -1,41 +1,31 @@
 <template>
-  <!--{{ datapoints }}-->
-  <div class="card">
-    <HeartrateSpeedChart/><!-- v-bind:xAxisDefaultLabels="datapoints === undefined ?  null : defaultXaxisLabels"/>-->
-  </div>
-  <br/><br/><br/>
-  <div class="card">
-  <AltitudeChart/> <!--v-bind:xAxisDefaultLabels="getDefaultXaxisLabels"/>-->
+  <div class="dashboard">
+    <div class="charts-container">
+      <div class="card">
+        <HeartrateSpeedChart/>
+      </div>
+      <div class="card">
+        <AltitudeChart/>
+      </div>
+    </div>
+    <div class="map-card">
+      <CustomMap/>
+    </div>
   </div>
 </template>
 
-
 <script>
+import CustomMap from "@/components/CustomMap.vue";
 import HeartrateSpeedChart from "@/components/HeartrateSpeedChart.vue";
 import AltitudeChart from "@/components/AltitudeChart.vue";
-import {ref} from "vue";
 
 export default {
   name: "Charts",
-  components: {AltitudeChart, HeartrateSpeedChart},
+  components: {CustomMap, AltitudeChart, HeartrateSpeedChart},
   created() {
     console.log("CREATED ...");
     this.setWatchData();
   },
-  /*
-  data() {
-    return {
-      datapoints: this.$store.getters.getDatapoints
-    };
-  },
-  watch: {
-    datapoints(newValue, oldValue) {
-      console.log(`datapoints changed from ${oldValue} to ${newValue}`);
-      if (newValue.length != 0)
-        return this.$store.getters.getDatapoints;
-    }
-  },
-  */
   computed: {
     datapoints() {
       if (this.$store.getters.getDatapoints.length === 0) {
@@ -45,15 +35,6 @@ export default {
         return this.$store.getters.getDatapoints;
       }
     },
-    /*
-    defaultXaxisLabels() {
-      if (this.$store.getters.getDatapoints == []) {
-        return;
-      } else {
-        return this.getDefaultXaxisLabels();
-      }
-    },
-    */
     roundToNextHour() {
       let currentDate = new Date();
       currentDate.setMinutes(currentDate.getMinutes() + 60);
@@ -78,8 +59,7 @@ export default {
       /*console.log(nextHourDate);*/
       /*for (let k = 0; k < 24; k++) {
         console.log("finalement :   ", last24Hours[k]);
-      }
-       */
+      } */
       return last24Hours;
     },
   },
@@ -89,6 +69,7 @@ export default {
       /*this.$store.commit('setHeartBeat');*/
       this.$store.dispatch('setWatchDataAction');
     },
+    /*
     getDefaultXaxisLabels() {
       let numberOfxAxisLabels = 6;
       //console.log("datapoints : ", datapoints);
@@ -108,28 +89,48 @@ export default {
       }
       return xAxisLabels;
     },
-    /*
-    displayTest() {
-      let array = new Array(this.$store.getters.getDatapoints.length);
-      console.log("DISPLAY ", this.$store.getters.getDatapoints.length);
-      for (let i = 0; i < array.length; i++) {
-        array[i] = this.$store.getters.getDatapoints[i].timestamp;
-      }
-      return array;
-    }*/
+     */
   }
 }
 </script>
 
+<style>
+.dashboard {
+  /*background: red;*/
+  display: flex;
+  flex-direction: column;
+  margin: 0 4% 0 4%;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
 
-<style scoped>
+.charts-container {
+  /*background: grey;*/
+  display: flex;
+  /*margin: 4%;*/
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
 
 .card {
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-  background: white;
-  border: solid white;
-  border-radius: 20px;
-  padding: 5% 4% 5% 3%;
+  /*box-shadow:  0 6px 20px 0 rgba(40, 38, 38, 0.85);*/
+  /*background: #35363A; // chrome's dark theme */
+  background: #242f3e;
+  border-radius: 15px;
+  padding: 2% 4% 2% 3%;
+  margin: 2% 1% 1% 1%;
+  width: 33%;
+}
 
+.map-card {
+  /*box-shadow:  0 6px 20px 0 rgba(40, 38, 38, 0.85);*/
+  /*background: #35363A; // chrome's dark theme */
+  background: #242f3e;
+  border-radius: 15px;
+  padding: 1%;
+  margin: 0.5% 0.5% 2% 0.5%;
+  width: 80%;
 }
 </style>
