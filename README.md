@@ -22,7 +22,7 @@ Ce repo contient le code du projet de CLSW réalisé par Léo MARACHE et Timoth�
  
     ``npm install``
  
-    ``npm run serve``
+    ``npm run dev``
 
 ## Choix technologiques
 
